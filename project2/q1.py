@@ -4,10 +4,10 @@ import pandas as pd
 
 
 # load data
-knnDummyTrainData = pd.read_csv('data/knn_dummy_train.csv', header=None)
-knnDummyTestData = pd.read_csv('data/knn_dummy_test.csv', header=None)
-# knnTrainData = pd.read_csv('data/knn_train.csv', header=None)
-# knnTestData = pd.read_csv('data/knn_test.csv', header=None)
+# knnDummyTrainData = pd.read_csv('data/knn_dummy_train.csv', header=None)
+# knnDummyTestData = pd.read_csv('data/knn_dummy_test.csv', header=None)
+knnTrainData = pd.read_csv('data/knn_train.csv', header=None)
+knnTestData = pd.read_csv('data/knn_test.csv', header=None)
 
 
 # separate data into labels and features
@@ -17,17 +17,17 @@ tryB = np.array([[2, 3, 4],
                 [9, 10, 11]])
 tryL = np.array([1, 1, 1])
 
-knnDummyTrainLabels = knnDummyTrainData.iloc[:, :1].values
-knnDummyTrainFeatures = knnDummyTrainData.iloc[:, 1:].values
+# knnDummyTrainLabels = knnDummyTrainData.iloc[:, :1].values
+# knnDummyTrainFeatures = knnDummyTrainData.iloc[:, 1:].values
 
-knnDummyTestLabels = knnDummyTestData.iloc[:, :1].values
-knnDummyTestFeatures = knnDummyTestData.iloc[:, 1:].values
+# knnDummyTestLabels = knnDummyTestData.iloc[:, :1].values
+# knnDummyTestFeatures = knnDummyTestData.iloc[:, 1:].values
 
-# knnTrainLabels = knnTrainData.iloc[:, :1].values
-# knnTrainFeatures = knnTrainData.iloc[:, 1:].values 
+knnTrainLabels = knnTrainData.iloc[:, :1].values
+knnTrainFeatures = knnTrainData.iloc[:, 1:].values 
 
-# knnTestLabels = knnTestData.iloc[:, :1].values
-# knnTestFeatures = knnTestData.iloc[:, 1:].values
+knnTestLabels = knnTestData.iloc[:, :1].values
+knnTestFeatures = knnTestData.iloc[:, 1:].values
 
 
 def distanceBetweenPoints(pointOneArray, pointTwoArray):
@@ -60,7 +60,7 @@ def findKNearest(k, point, points):
         bestIndices.extend([nearestPointIndex])
     return bestIndices
 
-def vote(k, point, points, labels):
+def getPredictedLabel(k, point, points, labels):
     totalVote = 0
     kBestIndicesArray = findKNearest(k, point, points)
     for index in kBestIndicesArray:
@@ -74,5 +74,21 @@ def vote(k, point, points, labels):
         print('Tie in vote occured!')
         return 0 # tie situation
 
-# print(vote(5, knnDummyTestFeatures[0], knnDummyTrainFeatures, knnDummyTrainLabels))
-print(knnDummyTestLabels[0][0])
+# print(getPredictedLabel(5, knnDummyTestFeatures[0], knnDummyTrainFeatures, knnDummyTrainLabels))
+# print(knnDummyTestLabels[0][0])
+
+def findError(k, trainFeatures, testFeatures, trainLabels, testLabels):
+    correct = 0
+    index = 0
+    for feat in testFeatures:
+        predictedLabel = getPredictedLabel(k, feat, trainFeatures, trainLabels)
+        if (predictedLabel == testLabels[index]):
+            correct += 1
+        index += 1
+    return 1 - (correct / len(testFeatures))
+
+print( findError(3, knnTrainFeatures, knnTestFeatures, knnTrainLabels, knnTestLabels) )
+
+# training error
+# The leave-one-out cross-validation error
+# The testing error
