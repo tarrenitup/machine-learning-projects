@@ -30,27 +30,6 @@ def getKSeeds(k, df):
         seeds[i] = dfRowToVector(df, randIdx)
     return seeds
 
-
-### get data ###
-dfSample = pd.read_csv('test-data.txt', dtype='int', delimiter = ',', header=None)
-dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
-# df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
-
-
-### get parameter(s) ###
-k = 3 # default
-if len(sys.argv) > 1:
-    k = int(sys.argv[1]) # if user supplies parameter
-
-
-### pick k seeds ###
-seedsSample = getKSeeds(2, dfSample)
-seedsF2 = getKSeeds(k, dfF2)
-# seeds = getKSeeds(k, df)
-
-
-### assign all points to its nearest seed ###
-
 def eucDist(vector): # distance from the origin 0
     sum = 0
     for i in range(vector.size):
@@ -71,33 +50,42 @@ def findClosestCentroid(rowVector, centroids):
             bestCentroidInd = centroid
     return bestCentroidInd
 
-# def assign(df, centroids):
-#     assignment = np.zeros(numRows(df)) # a rows long list of which each index is the k orientation.
-#     for rowIdx in range(numRows(df)):
-#         assignment[rowIdx] = findClosestCentroid(dfRowToVector(df, rowIdx), centroids)
-#     return assignment
+def assign(df, centroids):
+    assignment = np.zeros(numRows(df)) # a rows long list of which each index is the k orientation.
+    for rowIdx in range(numRows(df)):
+        assignment[rowIdx] = findClosestCentroid(dfRowToVector(df, rowIdx), centroids)
+    return assignment
+
+
+### get data ###
+dfSample = pd.read_csv('test-data.txt', dtype='int', delimiter = ',', header=None)
+dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
+df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
+
+
+### get parameter(s) ###
+k = 3 # default
+if len(sys.argv) > 1:
+    k = int(sys.argv[1]) # if user supplies parameter
+
+
+### pick k seeds ###
+seedsSample = getKSeeds(2, dfSample)
+seedsF2 = getKSeeds(k, dfF2)
+seeds = getKSeeds(k, df)
+
+
+### assign all points to its nearest seed ###
+initAssignmentSample = assign(dfSample, seedsSample)
+initAssignmentF2 = assign(dfF2, seedsF2)
+initAssignment = assign(df, seeds)
 
 
 #### compute k centroids ###
+
 
 ### reassign all points to its nearest centroid ###
 
 # changeCheck should take the old and new assignments and return the amount of different indecies.
 
-
-
-# print(getKSeeds(1, dfSample))
-# assign(dfSample, seedsSample)
-# print( assign(dfSample, seedsSample) )
-
-
-# print("Sample -> ", seedsSample)
-
-testVec = np.array([0,2,3])
-testtCentroids = { 0: np.array([0,1,2]), 1: np.array([1,2,3]), 2: np.array([7,8,9]) }
-
-# print("vector -> : ",  testVec)
-# print("centroids -> : ", testtCentroids)
-# print("closest ind -> : ", findClosestCentroid(testVec, testtCentroids))
-
-# print(  getDistanceBetween( np.array([1,3]), np.array([4,4]) )  )
+print(initAssignment)
