@@ -16,6 +16,12 @@ def numCols(df):
 def getRand(cap):
     return np.random.randint(0,cap)
 
+def dfRowToVector(df, rowIdx):
+    vector = np.zeros(numCols(df))
+    for i in range(vector.size):
+        vector[i] = df.iloc[rowIdx][i]
+    return vector
+
 def makeRandomVector(length, max):
     vector = np.zeros(length)
     for v in range(vector.size):
