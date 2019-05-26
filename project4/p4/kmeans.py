@@ -17,12 +17,36 @@ def numCols(df):
 def getRand(cap):
     return np.random.randint(0,cap)
 
+
+### get data ###
+
+dfSample = pd.read_csv('test-data.txt', dtype='int', delimiter = ',', header=None)
+# dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
+# df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
+
+
+### get parameter(s) ###
+
+k = 3 # default
+if len(sys.argv) > 1:
+    k = int(sys.argv[1]) # if user supplies parameter
+
+
+### pick k random seeds ###
+
 def getKSeeds(k, df):
     seeds = {}
     for i in range(k):
         randIdx = getRand(numRows(df))
         seeds[i] = df.iloc[randIdx]
     return seeds
+
+seedsSample = getKSeeds(2, dfSample)
+# seedsF2 = getKSeeds(k, dfF2)
+# seeds = getKSeeds(k, df)
+
+
+### assign all points to its nearest seed ###
 
 def eucDist(vector): # distance from the origin 0
     sum = 0
@@ -50,26 +74,6 @@ def assign(df, centroids):
         assignment[rowIdx] = findClosestCentroid(df.iloc[rowIdx], centroids)
     return assignment
 
-
-### get data ###
-dfSample = pd.read_csv('test-data.txt', dtype='int', delimiter = ',', header=None)
-# dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
-# df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
-
-
-### get parameter(s) ###
-k = 3 # default
-if len(sys.argv) > 1:
-    k = int(sys.argv[1]) # if user supplies parameter
-
-
-### pick k random seeds ###
-seedsSample = getKSeeds(2, dfSample)
-# seedsF2 = getKSeeds(k, dfF2)
-# seeds = getKSeeds(k, df)
-
-
-### assign all points to its nearest seed ###
 initAssignmentSample = assign(dfSample, seedsSample)
 # initAssignmentF2 = assign(dfF2, seedsF2)
 # initAssignment = assign(df, seeds)
@@ -79,16 +83,19 @@ initAssignmentSample = assign(dfSample, seedsSample)
 
 def getCentroidDim(df, assignment, colIdx, kval):
     sum = 0
-    for a in assignment:
-        if a == kval:
-            sum += df[colIdx][a]
-    return sum / len(assignment)
+    for a in range(assignment.size):
+        if assignment[a] == kval:
+            currVal = df[colIdx][a]
+            sum += currVal
+    centDimVal = sum / assignment.size
+    return centDimVal
 
 def getCentroid(df, assignment, kval):
     nc = numCols(df)
     centroid = np.zeros(nc)
-    for colIdx in range(nc) # for each dimension in data
+    for colIdx in range(nc): # for each dimension in data
         centroid[colIdx] = getCentroidDim(df, assignment, colIdx, kval)
+    return centroid
 
 def getCentroids(df, k, assignment):
     centroids = {}
@@ -97,11 +104,12 @@ def getCentroids(df, k, assignment):
     return centroids
 
 
-
+centroidsSample = getCentroids(dfSample, 2, initAssignmentSample)
+# centroidsF2 = getCentroid(dfF2, k, initAssignmentF2)
+# centroids = getCentroids(df, k, initAssignment)
+print(centroidsSample)
 
 
 ### reassign all points to its nearest centroid ###
 
 # changeCheck should take the old and new assignments and return the amount of different indecies.
-
-print(initAssignmentSample)
