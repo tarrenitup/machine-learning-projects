@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 ### utilities ###
-np.random.seed(200) # maybe make this based on time or something..
+np.random.seed(250) # maybe make this based on time or something..
 
 def numRows(df):
     return len(df)
@@ -20,7 +20,8 @@ def getRand(cap):
 
 ### get data ###
 
-dfSample = pd.read_csv('test-data.txt', dtype='int', delimiter = ',', header=None)
+# dfS1 = pd.read_csv('S1-data.txt', dtype='int', delimiter = ',', header=None)
+dfS2 = pd.read_csv('S2-data.txt', dtype='int', delimiter = ',', header=None)
 # dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
 # df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
 
@@ -41,7 +42,8 @@ def getKSeeds(k, df):
         seeds[i] = df.iloc[randIdx]
     return seeds
 
-seedsSample = getKSeeds(2, dfSample)
+# seedsS1 = getKSeeds(2, dfS1)
+seedsS2 = getKSeeds(2, dfS2)
 # seedsF2 = getKSeeds(k, dfF2)
 # seeds = getKSeeds(k, df)
 
@@ -74,7 +76,8 @@ def assign(df, centroids):
         assignment[rowIdx] = findClosestCentroid(df.iloc[rowIdx], centroids)
     return assignment
 
-initAssignmentSample = assign(dfSample, seedsSample)
+# initAssignmentS1 = assign(dfS1, seedsS1)
+initAssignmentS2 = assign(dfS2, seedsS2)
 # initAssignmentF2 = assign(dfF2, seedsF2)
 # initAssignment = assign(df, seeds)
 
@@ -82,12 +85,14 @@ initAssignmentSample = assign(dfSample, seedsSample)
 #### compute k centroids ###
 
 def getCentroidDim(df, assignment, colIdx, kval):
-    sum = 0
+    sumC = 0
+    count = 0
     for a in range(assignment.size):
         if assignment[a] == kval:
+            count += 1
             currVal = df[colIdx][a]
-            sum += currVal
-    centDimVal = sum / assignment.size
+            sumC += currVal
+    centDimVal = float(sumC / count)
     return centDimVal
 
 def getCentroid(df, assignment, kval):
@@ -104,12 +109,23 @@ def getCentroids(df, k, assignment):
     return centroids
 
 
-centroidsSample = getCentroids(dfSample, 2, initAssignmentSample)
-# centroidsF2 = getCentroid(dfF2, k, initAssignmentF2)
+# centroidsS1 = getCentroids(dfS1, 2, initAssignmentS1)
+centroidsS2 = getCentroids(dfS2, 2, initAssignmentS2)
+# centroidsF2 = getCentroids(dfF2, k, initAssignmentF2)
 # centroids = getCentroids(df, k, initAssignment)
-print(centroidsSample)
 
+# print(centroidsF2)
 
 ### reassign all points to its nearest centroid ###
+
+# newAssignmentS1 = assign(dfS1, centroidsS1)
+newAssignmentS2 = assign(dfS2, centroidsS2)
+
+
+print("data => ", dfS2)
+print("seeds => ", seedsS2)
+print("assignment => ", initAssignmentS2)
+print("centroids => ", centroidsS2)
+print("reassignment => ", newAssignmentS2)
 
 # changeCheck should take the old and new assignments and return the amount of different indecies.
