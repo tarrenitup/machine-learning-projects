@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 ### utilities ###
-np.random.seed(250) # maybe make this based on time or something..
+np.random.seed(275) # maybe make this based on time or something..
 
 def numRows(df):
     return len(df)
@@ -20,7 +20,6 @@ def getRand(cap):
 
 ### get data ###
 
-# dfS1 = pd.read_csv('S1-data.txt', dtype='int', delimiter = ',', header=None)
 dfS2 = pd.read_csv('S2-data.txt', dtype='int', delimiter = ',', header=None)
 # dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
 # df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
@@ -42,7 +41,6 @@ def getKSeeds(k, df):
         seeds[i] = df.iloc[randIdx]
     return seeds
 
-# seedsS1 = getKSeeds(2, dfS1)
 seedsS2 = getKSeeds(2, dfS2)
 # seedsF2 = getKSeeds(k, dfF2)
 # seeds = getKSeeds(k, df)
@@ -76,7 +74,6 @@ def assign(df, centroids):
         assignment[rowIdx] = findClosestCentroid(df.iloc[rowIdx], centroids)
     return assignment
 
-# initAssignmentS1 = assign(dfS1, seedsS1)
 initAssignmentS2 = assign(dfS2, seedsS2)
 # initAssignmentF2 = assign(dfF2, seedsF2)
 # initAssignment = assign(df, seeds)
@@ -109,23 +106,39 @@ def getCentroids(df, k, assignment):
     return centroids
 
 
-# centroidsS1 = getCentroids(dfS1, 2, initAssignmentS1)
-centroidsS2 = getCentroids(dfS2, 2, initAssignmentS2)
+# centroidsS2 = getCentroids(dfS2, 2, initAssignmentS2)
 # centroidsF2 = getCentroids(dfF2, k, initAssignmentF2)
 # centroids = getCentroids(df, k, initAssignment)
 
-# print(centroidsF2)
 
 ### reassign all points to its nearest centroid ###
 
-# newAssignmentS1 = assign(dfS1, centroidsS1)
-newAssignmentS2 = assign(dfS2, centroidsS2)
+# newAssignmentS2 = assign(dfS2, centroidsS2)
 
 
-print("data => ", dfS2)
-print("seeds => ", seedsS2)
-print("assignment => ", initAssignmentS2)
-print("centroids => ", centroidsS2)
-print("reassignment => ", newAssignmentS2)
+### loop ###
 
-# changeCheck should take the old and new assignments and return the amount of different indecies.
+def mainLoop(df, k, seeds, initAssign):
+    bestCentroids = []
+    bestAssignments = initAssign
+    reassignment = 0
+    while(True):
+        centroids = getCentroids(df, k, initAssign)
+        newAssign = assign(df, centroids)
+        if(np.array_equal(initAssign, newAssign)):
+            bestCentroids = centroids
+            bestAssignments = newAssign
+            print("reassignment times: ", reassignment)
+            break
+        else:
+            reassignment += 1
+            initAssign = newAssign
+    return {"best centroids: ": bestCentroids, "best assignments: ": bestAssignments}
+
+print(mainLoop(dfS2, 2, seedsS2, initAssignmentS2))
+
+# print("data => ", dfS2)
+# print("seeds => ", seedsS2)
+# print("assignment => ", initAssignmentS2)
+# print("centroids => ", centroidsS2)
+# print("reassignment => ", newAssignmentS2)
