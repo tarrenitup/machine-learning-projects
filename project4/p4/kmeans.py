@@ -6,7 +6,12 @@ import matplotlib.pyplot as plt
 
 
 ### utilities ###
-np.random.seed(275) # maybe make this based on time or something..
+# np.random.seed(130) # reproducable
+# 120 seed makes S2 go become reassigned 1 time.
+# 122 seed caused the two random seeds to be the same and a divide by 0 error, fixed w/ while loop. Now goes through 1 time.
+
+np.random.rand(4) # different each run
+
 
 def numRows(df):
     return len(df)
@@ -17,17 +22,35 @@ def numCols(df):
 def getRand(cap):
     return np.random.randint(0,cap)
 
+def getSSE(df, centroid, assignment, kval):
+    sums = 0
+    count = 0
+    for a in range(len(assignment)):
+        if assignment[a] == kval:
+            count += 1
+            sums += getDistanceBetween(df.iloc[a], centroid)
+    return float(sums) / float(count)
+
+def getSSETotal(df, centroids, assignment, k):
+    sums = 0
+    for kval in range(k):
+        sums += getSSE(df, centroids[kval], assignment, kval)
+    return float(sums) / float(k)
+    
+
 
 ### get data ###
 
 dfS2 = pd.read_csv('S2-data.txt', dtype='int', delimiter = ',', header=None)
-# dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
-# df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
+dfS3 = pd.read_csv('S3-data.txt', dtype='int', delimiter = ',', header=None)
+dfS4 = pd.read_csv('S4-data.txt', dtype='int', delimiter = ',', header=None)
+dfF2 = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None, nrows=2)
+df = pd.read_csv('p4-data.txt', dtype='int', delimiter = ',', header=None)
 
 
 ### get parameter(s) ###
 
-k = 3 # default
+k = 2 # default
 if len(sys.argv) > 1:
     k = int(sys.argv[1]) # if user supplies parameter
 
@@ -36,24 +59,24 @@ if len(sys.argv) > 1:
 
 def getKSeeds(k, df):
     seeds = {}
+    chosen = np.array([])
     for i in range(k):
         randIdx = getRand(numRows(df))
+        while(randIdx in chosen): # ensure that the same seed isn't chosen more than once.
+             randIdx = getRand(numRows(df))
         seeds[i] = df.iloc[randIdx]
+        chosen = np.append(chosen, randIdx)
     return seeds
-
-seedsS2 = getKSeeds(2, dfS2)
-# seedsF2 = getKSeeds(k, dfF2)
-# seeds = getKSeeds(k, df)
 
 
 ### assign all points to its nearest seed ###
 
 def eucDist(vector): # distance from the origin 0
-    sum = 0
+    sums = 0
     for i in range(vector.size):
         vs = vector[i] * vector[i]
-        sum = sum + vs
-    return math.sqrt(sum)
+        sums = sums + vs
+    return math.sqrt(sums)
 
 def getDistanceBetween(vectorA, vectorB): # optimization possibly: dist = numpy.linalg.norm(a-b)
     return math.fabs( eucDist(vectorA) - eucDist(vectorB) )
@@ -74,10 +97,6 @@ def assign(df, centroids):
         assignment[rowIdx] = findClosestCentroid(df.iloc[rowIdx], centroids)
     return assignment
 
-initAssignmentS2 = assign(dfS2, seedsS2)
-# initAssignmentF2 = assign(dfF2, seedsF2)
-# initAssignment = assign(df, seeds)
-
 
 #### compute k centroids ###
 
@@ -89,7 +108,7 @@ def getCentroidDim(df, assignment, colIdx, kval):
             count += 1
             currVal = df[colIdx][a]
             sumC += currVal
-    centDimVal = float(sumC / count)
+    centDimVal = float(sumC) / float(count)
     return centDimVal
 
 def getCentroid(df, assignment, kval):
@@ -106,24 +125,18 @@ def getCentroids(df, k, assignment):
     return centroids
 
 
-# centroidsS2 = getCentroids(dfS2, 2, initAssignmentS2)
-# centroidsF2 = getCentroids(dfF2, k, initAssignmentF2)
-# centroids = getCentroids(df, k, initAssignment)
+### reassign loop ###
 
-
-### reassign all points to its nearest centroid ###
-
-# newAssignmentS2 = assign(dfS2, centroidsS2)
-
-
-### loop ###
-
-def mainLoop(df, k, seeds, initAssign):
-    bestCentroids = []
+def mainLoop(df, k):
+    seeds = getKSeeds(k, df)
+    initAssign = assign(df, seeds)
+    bestCentroids = {}
     bestAssignments = initAssign
     reassignment = 0
     while(True):
         centroids = getCentroids(df, k, initAssign)
+        sse = getSSETotal(df, centroids, initAssign, k)
+        print("On assign: #", reassignment, ", SSE: ", sse)
         newAssign = assign(df, centroids)
         if(np.array_equal(initAssign, newAssign)):
             bestCentroids = centroids
@@ -133,12 +146,9 @@ def mainLoop(df, k, seeds, initAssign):
         else:
             reassignment += 1
             initAssign = newAssign
-    return {"best centroids: ": bestCentroids, "best assignments: ": bestAssignments}
+    return {0: bestCentroids, 1: bestAssignments}
 
-print(mainLoop(dfS2, 2, seedsS2, initAssignmentS2))
+# bestsS2 = mainLoop(dfS2, 2, seedsS2, initAssignmentS2)
+bests = mainLoop(df, k)
 
-# print("data => ", dfS2)
-# print("seeds => ", seedsS2)
-# print("assignment => ", initAssignmentS2)
-# print("centroids => ", centroidsS2)
-# print("reassignment => ", newAssignmentS2)
+print("Best assign (k index orientation): #", bests[1])
